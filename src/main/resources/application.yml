@@ -3,3 +3,8 @@ spring:
     name: shop-sphere
   profiles:
     active: dev
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    tags-sorter: alpha

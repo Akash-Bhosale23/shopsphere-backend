@@ -20,6 +20,10 @@ import com.codenza.shopsphere.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Categories", description = "Manage product categories")
 @RestController
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
@@ -27,26 +31,31 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    @Operation(summary = "Create a category")
     @PostMapping
     public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(request));
     }
 
+    @Operation(summary = "List all categories")
     @GetMapping
     public List<CategoryResponse> getAll() {
         return categoryService.getAll();
     }
 
+    @Operation(summary = "Get a category by id")
     @GetMapping("/{id}")
     public CategoryResponse getById(@PathVariable Long id) {
         return categoryService.getById(id);
     }
 
+    @Operation(summary = "Update category")
     @PutMapping("/{id}")
     public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
         return categoryService.update(id, request);
     }
 
+    @Operation(summary = "Delete category")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
