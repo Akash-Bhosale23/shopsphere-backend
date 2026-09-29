@@ -52,4 +52,9 @@ public class GlobalExceptionHandler {
                 message, fieldErrors);
         return ResponseEntity.status(status).body(body);
     }
+    
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of());
+    }
 }
