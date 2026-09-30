@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.codenza.shopsphere.entity.Product;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-    List<Product> findByCategoryId(Long categoryId);
 
-    List<Product> findBySellerId(Long sellerId);
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor {
+
+
 }
