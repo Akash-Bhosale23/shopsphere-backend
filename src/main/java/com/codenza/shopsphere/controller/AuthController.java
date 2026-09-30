@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.codenza.shopsphere.dto.AuthResponse;
+import com.codenza.shopsphere.dto.LoginRequest;
 import com.codenza.shopsphere.dto.RegisterRequest;
 import com.codenza.shopsphere.dto.UserResponse;
 import com.codenza.shopsphere.service.AuthService;
@@ -28,5 +30,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    }
+    
+    @Operation(summary = "Log in and receive a JWT")
+    @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }

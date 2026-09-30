@@ -57,4 +57,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), Map.of());
     }
+    
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthFailure(org.springframework.security.core.AuthenticationException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "Invalid email or password", Map.of());
+    }
 }
