@@ -89,15 +89,11 @@ class ProductServiceTest {
 	void create_shouldSaveProduct_whenCategoryExists() {
 
 		ProductRequest request = new ProductRequest("Laptop", "Gaming Laptop", new BigDecimal("50000"), 10, 1L);
-
 		ProductResponse expectedResponse = mock(ProductResponse.class);
 
 		when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
-
 		when(currentUserProvider.getCurrentUser()).thenReturn(seller);
-
 		when(productRepository.save(any(Product.class))).thenReturn(product);
-
 		when(productMapper.toResponse(product)).thenReturn(expectedResponse);
 
 		ProductResponse result = productService.create(request);
@@ -105,11 +101,8 @@ class ProductServiceTest {
 		assertEquals(expectedResponse, result);
 
 		verify(categoryRepository).findById(1L);
-
 		verify(currentUserProvider).getCurrentUser();
-
 		verify(productRepository).save(any(Product.class));
-
 		verify(productMapper).toResponse(product);
 	}
 
@@ -126,9 +119,7 @@ class ProductServiceTest {
 		assertEquals("Category not found with id: 99", exception.getMessage());
 
 		verify(categoryRepository).findById(99L);
-
 		verify(currentUserProvider, never()).getCurrentUser();
-
 		verify(productRepository, never()).save(any(Product.class));
 	}
 
@@ -145,7 +136,6 @@ class ProductServiceTest {
 		otherUser.setRole(Role.SELLER);
 
 		when(productRepository.findById(100L)).thenReturn(Optional.of(product));
-
 		when(currentUserProvider.getCurrentUser()).thenReturn(otherUser);
 
 		UnauthorizedActionException exception = assertThrows(UnauthorizedActionException.class,
@@ -154,11 +144,8 @@ class ProductServiceTest {
 		assertEquals("You do not have permission to modify this product", exception.getMessage());
 
 		verify(productRepository).findById(100L);
-
 		verify(currentUserProvider).getCurrentUser();
-
 		verify(categoryRepository, never()).findById(anyLong());
-
 		verify(productRepository, never()).save(any(Product.class));
 	}
 
@@ -171,35 +158,23 @@ class ProductServiceTest {
 		ProductResponse expectedResponse = mock(ProductResponse.class);
 
 		when(productRepository.findById(100L)).thenReturn(Optional.of(product));
-
 		when(currentUserProvider.getCurrentUser()).thenReturn(seller);
-
 		when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
-
 		when(productMapper.toResponse(product)).thenReturn(expectedResponse);
 
 		ProductResponse result = productService.update(100L, request);
 
 		assertEquals(expectedResponse, result);
-
 		assertEquals("Updated Laptop", product.getName());
-
 		assertEquals("Updated Gaming Laptop", product.getDescription());
-
 		assertEquals(new BigDecimal("60000"), product.getPrice());
-
 		assertEquals(20, product.getStockQuantity());
-
 		assertEquals(category, product.getCategory());
 
 		verify(productRepository).findById(100L);
-
 		verify(currentUserProvider).getCurrentUser();
-
 		verify(categoryRepository).findById(1L);
-
 		verify(productMapper).toResponse(product);
-
 		verify(productRepository, never()).save(any(Product.class));
 	}
 
@@ -207,15 +182,12 @@ class ProductServiceTest {
 	void delete_shouldSucceed_whenUserIsAdmin_evenIfNotOwner() {
 
 		when(productRepository.findById(100L)).thenReturn(Optional.of(product));
-
 		when(currentUserProvider.getCurrentUser()).thenReturn(admin);
 
 		productService.delete(100L);
 
 		verify(productRepository).findById(100L);
-
 		verify(currentUserProvider).getCurrentUser();
-
 		verify(productRepository).delete(product);
 	}
 	
