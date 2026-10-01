@@ -8,3 +8,7 @@ springdoc:
   swagger-ui:
     operations-sorter: method
     tags-sorter: alpha
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] %logger{36} - %msg%n"
