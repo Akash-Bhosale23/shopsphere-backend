@@ -1,8 +1,5 @@
 package com.codenza.shopsphere.entity;
 
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -25,7 +22,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "users")
-public class User {
+public class User extends Auditable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +42,4 @@ public class User {
 	@Column(nullable = false, length = 50)
 	private Role role;
 
-	@CreationTimestamp
-	@Column(nullable = false, length = 100, updatable = false)
-	private LocalDateTime createdAt;
 }

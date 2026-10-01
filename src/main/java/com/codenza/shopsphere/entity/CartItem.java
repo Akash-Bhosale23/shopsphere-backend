@@ -18,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CartItem {
+public class CartItem extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

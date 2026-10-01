@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class OrderItem {
+public class OrderItem extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
