@@ -1,10 +1,13 @@
 package com.codenza.shopsphere.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +32,9 @@ import com.codenza.shopsphere.repository.ProductRepository;
 import com.codenza.shopsphere.security.CurrentUserProvider;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -41,6 +46,9 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
     private final CurrentUserProvider currentUserProvider;
+    
+    @Value("${app.order.unpaid-timeout-minutes}")
+    private int unpaidTimeoutMinutes;
 
     @CacheEvict(value = "products", allEntries = true)
     @Transactional
@@ -157,6 +165,31 @@ public class OrderService {
 
         if (!isAdmin && !isOwner) {
             throw new UnauthorizedActionException("You do not have permission to view this order");
+        }
+    }
+    
+    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @CacheEvict(value = "products", allEntries = true)
+    @Transactional
+    public void cancelStaleUnpaidOrders() {
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(unpaidTimeoutMinutes);
+        List<Order> staleOrders = orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PLACED, cutoff);
+
+        if (staleOrders.isEmpty()) {
+            return;
+        }
+
+        log.info("Found {} stale unpaid order(s) to auto-cancel", staleOrders.size());
+
+        for (Order order : staleOrders) {
+            List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
+            for (OrderItem item : items) {
+                Product product = item.getProduct();
+                product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+                productRepository.save(product);
+            }
+            order.setStatus(OrderStatus.CANCELLED);
+            log.info("Auto-cancelled order {} (placed at {})", order.getId(), order.getCreatedAt());
         }
     }
 }
