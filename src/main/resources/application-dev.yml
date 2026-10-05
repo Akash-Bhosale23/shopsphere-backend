@@ -29,6 +29,12 @@ spring:
           starttls:
             enable: false
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
 app:
   admin:
     email: admin@shopsphere.com
