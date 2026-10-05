@@ -3,6 +3,7 @@ package com.codenza.shopsphere.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final CurrentUserProvider currentUserProvider;
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public OrderResponse placeOrder() {
         User customer = currentUserProvider.getCurrentUser();
@@ -116,6 +118,7 @@ public class OrderService {
         return orderMapper.toResponse(order, orderItemRepository.findByOrderId(order.getId()));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public void cancelOrder(Long id) {
         Order order = findOrder(id);
