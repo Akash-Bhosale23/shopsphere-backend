@@ -49,6 +49,8 @@ public class OrderService {
     
     @Value("${app.order.unpaid-timeout-minutes}")
     private int unpaidTimeoutMinutes;
+    
+    private final EmailService emailService;
 
     @CacheEvict(value = "products", allEntries = true)
     @Transactional
@@ -97,6 +99,7 @@ public class OrderService {
         cartItemRepository.deleteAll(cartItems);
 
         List<OrderItem> savedItems = orderItemRepository.findByOrderId(savedOrder.getId());
+        emailService.sendOrderConfirmation(customer.getEmail(), savedOrder);
         return orderMapper.toResponse(savedOrder, savedItems);
     }
 
