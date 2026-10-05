@@ -2,6 +2,8 @@ package com.codenza.shopsphere.service;
 
 import java.math.BigDecimal;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,6 +35,7 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final CurrentUserProvider currentUserProvider;
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductResponse create(ProductRequest request) {
         Category category = categoryRepository.findById(request.categoryId())
@@ -52,6 +55,10 @@ public class ProductService {
         return productMapper.toResponse(productRepository.save(product));
     }
 
+    @Cacheable(
+            value = "products",
+            key = "#categoryId + '-' + #keyword + '-' + #minPrice + '-' + #maxPrice + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort"
+        )
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> search(Long categoryId, String keyword,
                                                  BigDecimal minPrice, BigDecimal maxPrice,
@@ -79,6 +86,7 @@ public class ProductService {
         return productMapper.toResponse(findProduct(id));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = findProduct(id);
@@ -97,6 +105,7 @@ public class ProductService {
         return productMapper.toResponse(product);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public void delete(Long id) {
         Product product = findProduct(id);
