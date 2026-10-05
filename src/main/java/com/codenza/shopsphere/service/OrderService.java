@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -11,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.codenza.shopsphere.config.RabbitMQConfig;
 import com.codenza.shopsphere.dto.OrderResponse;
 import com.codenza.shopsphere.dto.UpdateOrderStatusRequest;
 import com.codenza.shopsphere.entity.Cart;
@@ -20,6 +22,7 @@ import com.codenza.shopsphere.entity.OrderItem;
 import com.codenza.shopsphere.entity.Product;
 import com.codenza.shopsphere.entity.User;
 import com.codenza.shopsphere.enums.OrderStatus;
+import com.codenza.shopsphere.event.OrderPlacedEvent;
 import com.codenza.shopsphere.exception.BadRequestException;
 import com.codenza.shopsphere.exception.ResourceNotFoundException;
 import com.codenza.shopsphere.exception.UnauthorizedActionException;
@@ -50,7 +53,7 @@ public class OrderService {
     @Value("${app.order.unpaid-timeout-minutes}")
     private int unpaidTimeoutMinutes;
     
-    private final EmailService emailService;
+    private final RabbitTemplate rabbitTemplate;
 
     @CacheEvict(value = "products", allEntries = true)
     @Transactional
@@ -99,7 +102,8 @@ public class OrderService {
         cartItemRepository.deleteAll(cartItems);
 
         List<OrderItem> savedItems = orderItemRepository.findByOrderId(savedOrder.getId());
-        emailService.sendOrderConfirmation(customer.getEmail(), savedOrder);
+        OrderPlacedEvent event = new OrderPlacedEvent(savedOrder.getId(), customer.getEmail(), total);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, RabbitMQConfig.ORDER_PLACED_ROUTING_KEY, event);
         return orderMapper.toResponse(savedOrder, savedItems);
     }
 
