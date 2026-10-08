@@ -16,6 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import com.codenza.shopsphere.config.RabbitMQConfig;
+import com.codenza.shopsphere.event.OrderPlacedEvent;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verifyNoInteractions;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.OptimisticLockingFailureException;
 
@@ -64,6 +72,9 @@ class OrderServiceTest {
 
     @Mock
     private CurrentUserProvider currentUserProvider;
+    
+    @Mock
+    private RabbitTemplate rabbitTemplate;
 
     @InjectMocks
     private OrderService orderService;
@@ -156,6 +167,16 @@ class OrderServiceTest {
         assertThat(product.getStockQuantity()).isEqualTo(3);
         verify(cartItemRepository).deleteAll(List.of(cartItem));
         verify(orderItemRepository).save(any(OrderItem.class));
+        ArgumentCaptor<OrderPlacedEvent> eventCaptor = ArgumentCaptor.forClass(OrderPlacedEvent.class);
+        verify(rabbitTemplate).convertAndSend(
+                eq(RabbitMQConfig.ORDER_EXCHANGE),
+                eq(RabbitMQConfig.ORDER_PLACED_ROUTING_KEY),
+                eventCaptor.capture());
+
+        OrderPlacedEvent event = eventCaptor.getValue();
+        assertThat(event.orderId()).isEqualTo(1000L);
+        assertThat(event.customerEmail()).isEqualTo("ravi@test.com");
+        assertThat(event.totalAmount()).isEqualByComparingTo("100000");
     }
 
     @Test
@@ -172,6 +193,7 @@ class OrderServiceTest {
 
         verify(cartItemRepository, never()).deleteAll(any());
         verify(orderItemRepository, never()).save(any(OrderItem.class));
+        verifyNoInteractions(rabbitTemplate);
     }
 
     @Test
@@ -188,6 +210,7 @@ class OrderServiceTest {
 
         assertThat(exception.getMessage()).contains("just updated by someone else");
         verify(cartItemRepository, never()).deleteAll(any());
+        verifyNoInteractions(rabbitTemplate);
     }
 
     @Test
