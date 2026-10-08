@@ -31,3 +31,21 @@ build/
 
 ### VS Code ###
 .vscode/
+**/.env
+
+### Environment files (keep secrets out, allow a safe template) ###
+.env.*
+!.env.example
+
+### Logs and scratch files ###
+*.log
+logs/
+test-output.txt
+
+### Eclipse extras ###
+bin/
+.metadata/
+
+### OS files ###
+.DS_Store
+Thumbs.db

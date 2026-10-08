@@ -1,11 +1,8 @@
 package com.codenza.shopsphere;
 
-
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class ShopSphereApplicationTests {
+class ShopSphereApplicationTests extends AbstractIntegrationTest {
 
 	@Test
 	void contextLoads() {
