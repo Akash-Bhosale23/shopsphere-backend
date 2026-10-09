@@ -27,6 +27,7 @@ jobs:
 
     env:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+	  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD}}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
