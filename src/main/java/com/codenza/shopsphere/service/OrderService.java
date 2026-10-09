@@ -34,6 +34,7 @@ import com.codenza.shopsphere.repository.OrderRepository;
 import com.codenza.shopsphere.repository.ProductRepository;
 import com.codenza.shopsphere.security.CurrentUserProvider;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,6 +50,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
     private final CurrentUserProvider currentUserProvider;
+    private final MeterRegistry meterRegistry;
     
     @Value("${app.order.unpaid-timeout-minutes}")
     private int unpaidTimeoutMinutes;
@@ -104,6 +106,7 @@ public class OrderService {
         List<OrderItem> savedItems = orderItemRepository.findByOrderId(savedOrder.getId());
         OrderPlacedEvent event = new OrderPlacedEvent(savedOrder.getId(), customer.getEmail(), total);
         rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, RabbitMQConfig.ORDER_PLACED_ROUTING_KEY, event);
+        meterRegistry.counter("shopsphere.orders.placed").increment();
         return orderMapper.toResponse(savedOrder, savedItems);
     }
 

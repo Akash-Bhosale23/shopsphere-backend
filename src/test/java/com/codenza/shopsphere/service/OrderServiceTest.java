@@ -48,6 +48,9 @@ import com.codenza.shopsphere.repository.OrderItemRepository;
 import com.codenza.shopsphere.repository.OrderRepository;
 import com.codenza.shopsphere.repository.ProductRepository;
 import com.codenza.shopsphere.security.CurrentUserProvider;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.mockito.Spy;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -78,6 +81,9 @@ class OrderServiceTest {
 
     @InjectMocks
     private OrderService orderService;
+    
+    @Spy
+    private MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
     private User customer;
     private User admin;
@@ -165,6 +171,7 @@ class OrderServiceTest {
 
         // Stock reduced by the quantity in the cart item (5 - 2 = 3)
         assertThat(product.getStockQuantity()).isEqualTo(3);
+        assertThat(meterRegistry.counter("shopsphere.orders.placed").count()).isEqualTo(1.0);
         verify(cartItemRepository).deleteAll(List.of(cartItem));
         verify(orderItemRepository).save(any(OrderItem.class));
         ArgumentCaptor<OrderPlacedEvent> eventCaptor = ArgumentCaptor.forClass(OrderPlacedEvent.class);
